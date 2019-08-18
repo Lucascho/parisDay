@@ -4,150 +4,147 @@
 </script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/timer.jquery/0.9.0/timer.jquery.js' type='text/javascript'></script>
 <script type='text/javascript'>
-jQuery.fn.extend({
-  everyTime: function(interval, label, fn, times) {
-    return this.each(function() {
-      jQuery.timer.add(this, interval, label, fn, times);
-    });
-  },
-  oneTime: function(interval, label, fn) {
-    return this.each(function() {
-      jQuery.timer.add(this, interval, label, fn, 1);
-    });
-  },
-  stopTime: function(label, fn) {
-    return this.each(function() {
-      jQuery.timer.remove(this, label, fn);
-    });
-  }
-});
-
-jQuery.extend({
-  timer: {
-    global: [],
-    guid: 1,
-    dataKey: "jQuery.timer",
-    regex: /^([0-9]+(?:\.[0-9]*)?)\s*(.*s)?$/,
-    powers: {
-      // Yeah this is major overkill...
-      'ms': 1,
-      'cs': 10,
-      'ds': 100,
-      's': 1000,
-      'das': 10000,
-      'hs': 100000,
-      'ks': 1000000
+  jQuery.fn.extend({
+    everyTime: function (interval, label, fn, times) {
+      return this.each(function () {
+        jQuery.timer.add(this, interval, label, fn, times);
+      });
     },
-    timeParse: function(value) {
-      if (value == undefined || value == null)
-        return null;
-      var result = this.regex.exec(jQuery.trim(value.toString()));
-      if (result[2]) {
-        var num = parseFloat(result[1]);
-        var mult = this.powers[result[2]] || 1;
-        return num * mult;
-      } else {
-        return value;
-      }
+    oneTime: function (interval, label, fn) {
+      return this.each(function () {
+        jQuery.timer.add(this, interval, label, fn, 1);
+      });
     },
-    add: function(element, interval, label, fn, times) {
-      var counter = 0;
-      
-      if (jQuery.isFunction(label)) {
-        if (!times) 
-          times = fn;
-        fn = label;
-        label = interval;
-      }
-      
-      interval = jQuery.timer.timeParse(interval);
+    stopTime: function (label, fn) {
+      return this.each(function () {
+        jQuery.timer.remove(this, label, fn);
+      });
+    }
+  });
 
-      if (typeof interval != 'number' || isNaN(interval) || interval < 0)
-        return;
-
-      if (typeof times != 'number' || isNaN(times) || times < 0) 
-        times = 0;
-      
-      times = times || 0;
-      
-      var timers = jQuery.data(element, this.dataKey) || jQuery.data(element, this.dataKey, {});
-      
-      if (!timers[label])
-        timers[label] = {};
-      
-      fn.timerID = fn.timerID || this.guid++;
-      
-      var handler = function() {
-        if ((++counter > times && times !== 0) || fn.call(element, counter) === false)
-          jQuery.timer.remove(element, label, fn);
-      };
-      
-      handler.timerID = fn.timerID;
-      
-      if (!timers[label][fn.timerID])
-        timers[label][fn.timerID] = window.setInterval(handler,interval);
-      
-      this.global.push( element );
-      
-    },
-    remove: function(element, label, fn) {
-      var timers = jQuery.data(element, this.dataKey), ret;
-      
-      if ( timers ) {
-        
-        if (!label) {
-          for ( label in timers )
-            this.remove(element, label, fn);
-        } else if ( timers[label] ) {
-          if ( fn ) {
-            if ( fn.timerID ) {
-              window.clearInterval(timers[label][fn.timerID]);
-              delete timers[label][fn.timerID];
-            }
-          } else {
-            for ( var fn in timers[label] ) {
-              window.clearInterval(timers[label][fn]);
-              delete timers[label][fn];
-            }
-          }
-          
-          for ( ret in timers[label] ) break;
-          if ( !ret ) {
-            ret = null;
-            delete timers[label];
-          }
+  jQuery.extend({
+    timer: {
+      global: [],
+      guid: 1,
+      dataKey: "jQuery.timer",
+      regex: /^([0-9]+(?:\.[0-9]*)?)\s*(.*s)?$/,
+      powers: {
+        // Yeah this is major overkill...
+        'ms': 1,
+        'cs': 10,
+        'ds': 100,
+        's': 1000,
+        'das': 10000,
+        'hs': 100000,
+        'ks': 1000000
+      },
+      timeParse: function (value) {
+        if (value == undefined || value == null)
+          return null;
+        var result = this.regex.exec(jQuery.trim(value.toString()));
+        if (result[2]) {
+          var num = parseFloat(result[1]);
+          var mult = this.powers[result[2]] || 1;
+          return num * mult;
+        } else {
+          return value;
         }
-        
-        for ( ret in timers ) break;
-        if ( !ret ) 
-          jQuery.removeData(element, this.dataKey);
+      },
+      add: function (element, interval, label, fn, times) {
+        var counter = 0;
+
+        if (jQuery.isFunction(label)) {
+          if (!times)
+            times = fn;
+          fn = label;
+          label = interval;
+        }
+
+        interval = jQuery.timer.timeParse(interval);
+
+        if (typeof interval != 'number' || isNaN(interval) || interval < 0)
+          return;
+
+        if (typeof times != 'number' || isNaN(times) || times < 0)
+          times = 0;
+
+        times = times || 0;
+
+        var timers = jQuery.data(element, this.dataKey) || jQuery.data(element, this.dataKey, {});
+
+        if (!timers[label])
+          timers[label] = {};
+
+        fn.timerID = fn.timerID || this.guid++;
+
+        var handler = function () {
+          if ((++counter > times && times !== 0) || fn.call(element, counter) === false)
+            jQuery.timer.remove(element, label, fn);
+        };
+
+        handler.timerID = fn.timerID;
+
+        if (!timers[label][fn.timerID])
+          timers[label][fn.timerID] = window.setInterval(handler, interval);
+
+        this.global.push(element);
+
+      },
+      remove: function (element, label, fn) {
+        var timers = jQuery.data(element, this.dataKey), ret;
+
+        if (timers) {
+
+          if (!label) {
+            for (label in timers)
+              this.remove(element, label, fn);
+          } else if (timers[label]) {
+            if (fn) {
+              if (fn.timerID) {
+                window.clearInterval(timers[label][fn.timerID]);
+                delete timers[label][fn.timerID];
+              }
+            } else {
+              for (var fn in timers[label]) {
+                window.clearInterval(timers[label][fn]);
+                delete timers[label][fn];
+              }
+            }
+
+            for (ret in timers[label]) break;
+            if (!ret) {
+              ret = null;
+              delete timers[label];
+            }
+          }
+
+          for (ret in timers) break;
+          if (!ret)
+            jQuery.removeData(element, this.dataKey);
+        }
       }
     }
-  }
-});
-
-jQuery(window).bind("unload", function() {
-  jQuery.each(jQuery.timer.global, function(index, item) {
-    jQuery.timer.remove(item);
   });
-});
 
+  jQuery(window).bind("unload", function () {
+    jQuery.each(jQuery.timer.global, function (index, item) {
+      jQuery.timer.remove(item);
+    });
+  });
 
+  // 非套件
 
-
-// 非套件
-
-var startDate = new Date();
-  var endDate = new Date('2020/03/09 16:26');
-  var spantime = (endDate - startDate)/1000;
+  var startDate = new Date();
+  var endDate = new Date('2020/03/09 16:00');
+  var spantime = (endDate - startDate) / 1000;
 
   $(document).ready(function () {
-    $(this).everyTime('1s', function(i) {
-       spantime --;
-       var d = Math.floor(spantime / (24 * 3600));
-       var h = Math.floor((spantime % (24 * 3600)) / 3600);
-       var m = Math.floor((spantime % 3600) / (60));
-       var s = Math.floor(spantime % 60);
+    $(this).everyTime('1s', function (i) {
+      spantime--;
+      var d = Math.floor(spantime / (24 * 3600));
+      var h = Math.floor((spantime % (24 * 3600)) / 3600);
+      var m = Math.floor((spantime % 3600) / (60));
+      var s = Math.floor(spantime % 60);
 
       if (spantime > 0) {
         $('#day').text(d);
@@ -164,9 +161,21 @@ var startDate = new Date();
 
 
 </script>
-距離出發還有
-還有：
-<div id="day"></div>天
-<div id="hour"></div>時
-<div id="min"></div>分
-<div id="sec"></div>秒
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<body>
+    <div class="container-fluid">
+        <div class="row align-items-center justify-content-center">
+            <div class="display-3">距離出發還有
+                還有：
+              </div>
+        </div>
+        <div class="row align-items-center justify-content-center display-1">
+              <div id="day"></div>天
+              <div id="hour"></div>時
+              <div id="min"></div>分
+              <div id="sec"></div>秒
+        </div>
+      
+      
+      </div>
+</body>
